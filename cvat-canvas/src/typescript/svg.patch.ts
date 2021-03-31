@@ -16,6 +16,7 @@ import { parsePoints, clamp } from './shared';
 // Update constructor
 const originalDraw = SVG.Element.prototype.draw;
 SVG.Element.prototype.draw = function constructor(...args: any): any {
+    console.log('ERROR');
     let handler = this.remember('_paintHandler');
     if (!handler) {
         originalDraw.call(this, ...args);

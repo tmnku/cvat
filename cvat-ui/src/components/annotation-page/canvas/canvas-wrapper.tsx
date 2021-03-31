@@ -9,9 +9,7 @@ import Slider from 'antd/lib/slider';
 import Dropdown from 'antd/lib/dropdown';
 import { PlusCircleOutlined, UpOutlined } from '@ant-design/icons';
 
-import {
-    ColorBy, GridColor, ObjectType, ContextMenuType, Workspace, ShapeType,
-} from 'reducers/interfaces';
+import { ColorBy, GridColor, ObjectType, ContextMenuType, Workspace, ShapeType } from 'reducers/interfaces';
 import { LogType } from 'cvat-logger';
 import { Canvas } from 'cvat-canvas-wrapper';
 import getCore from 'cvat-core-wrapper';
@@ -97,9 +95,7 @@ interface Props {
 
 export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     public componentDidMount(): void {
-        const {
-            automaticBordering, showObjectsTextAlways, canvasInstance, workspace,
-        } = this.props;
+        const { automaticBordering, showObjectsTextAlways, canvasInstance, workspace } = this.props;
 
         // It's awful approach from the point of view React
         // But we do not have another way because cvat-canvas returns regular DOM element
@@ -336,9 +332,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     };
 
     private onCanvasShapeDrawn = (event: any): void => {
-        const {
-            jobInstance, activeLabelID, activeObjectType, frame, onShapeDrawn, onCreateAnnotations,
-        } = this.props;
+        const { jobInstance, activeLabelID, activeObjectType, frame, onShapeDrawn, onCreateAnnotations } = this.props;
 
         if (!event.detail.continue) {
             onShapeDrawn();
@@ -361,9 +355,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     };
 
     private onCanvasObjectsMerged = (event: any): void => {
-        const {
-            jobInstance, frame, onMergeAnnotations, onMergeObjects,
-        } = this.props;
+        const { jobInstance, frame, onMergeAnnotations, onMergeObjects } = this.props;
 
         onMergeObjects(false);
 
@@ -376,9 +368,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     };
 
     private onCanvasObjectsGroupped = (event: any): void => {
-        const {
-            jobInstance, frame, onGroupAnnotations, onGroupObjects,
-        } = this.props;
+        const { jobInstance, frame, onGroupAnnotations, onGroupObjects } = this.props;
 
         onGroupObjects(false);
 
@@ -394,9 +384,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     };
 
     private onCanvasTrackSplitted = (event: any): void => {
-        const {
-            jobInstance, frame, onSplitAnnotations, onSplitTrack,
-        } = this.props;
+        const { jobInstance, frame, onSplitAnnotations, onSplitTrack } = this.props;
 
         onSplitTrack(false);
 
@@ -478,9 +466,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     };
 
     private onCanvasCursorMoved = async (event: any): Promise<void> => {
-        const {
-            jobInstance, activatedStateID, workspace, onActivateObject,
-        } = this.props;
+        const { jobInstance, activatedStateID, workspace, onActivateObject } = this.props;
 
         if (![Workspace.STANDARD, Workspace.REVIEW_WORKSPACE].includes(workspace)) {
             return;
@@ -611,9 +597,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     }
 
     private updateShapesView(): void {
-        const {
-            annotations, opacity, colorBy, outlined, outlineColor,
-        } = this.props;
+        const { annotations, opacity, colorBy, outlined, outlineColor } = this.props;
 
         for (const state of annotations) {
             let shapeColor = '';
@@ -646,8 +630,8 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             canvasInstance.setupIssueRegions({});
         } else {
             const regions = frameIssues.reduce((acc: Record<number, number[]>, issue: any): Record<
-            number,
-            number[]
+                number,
+                number[]
             > => {
                 acc[issue.id] = issue.position;
                 return acc;
@@ -657,9 +641,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     }
 
     private updateCanvas(): void {
-        const {
-            curZLayer, annotations, frameData, canvasInstance,
-        } = this.props;
+        const { curZLayer, annotations, frameData, canvasInstance } = this.props;
 
         if (frameData !== null) {
             canvasInstance.setup(
@@ -790,7 +772,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         };
 
         return (
-            <Layout.Content style={{ position: 'relative' }}>
+            <>
                 <GlobalHotKeys keyMap={subKeyMap} handlers={handlers} />
                 {/*
                     This element doesn't have any props
@@ -825,7 +807,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                         <PlusCircleOutlined onClick={onAddZLayer} />
                     </CVATTooltip>
                 </div>
-            </Layout.Content>
+            </>
         );
     }
 }
