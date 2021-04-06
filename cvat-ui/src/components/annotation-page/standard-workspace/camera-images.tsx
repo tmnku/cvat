@@ -7,12 +7,14 @@ import 'cvat-canvas/src/typescript/svg.patch';
 import { Image as CanvasImage } from 'cvat-canvas/src/typescript/canvasModel';
 import './canvas-container.css';
 // import Snap from 'snapsvg';
-import { CombinedState } from 'reducers/interfaces';
+import { CombinedState, ObjectType } from 'reducers/interfaces';
 import { connect } from 'react-redux';
+// import { ObjectType } from 'cvat-ui/src/reducers/interfaces';
 
 interface Props {
     activeLabelID: number;
     frameData: any;
+    annotations: any[];
 }
 
 function mapStateToProps(state: CombinedState): Props {
@@ -24,11 +26,19 @@ function mapStateToProps(state: CombinedState): Props {
                 frame: { data: frameData, number: frame, fetching: frameFetching },
                 frameAngles,
             },
+            annotations: {
+                states: annotations,
+                activatedStateID,
+                activatedAttributeID,
+                selectedStatesID,
+                zLayer: { cur: curZLayer, min: minZLayer, max: maxZLayer },
+            },
         },
     } = state;
     return {
         activeLabelID,
         frameData,
+        annotations,
     };
 }
 
@@ -48,6 +58,9 @@ class LeftCameraImages extends React.PureComponent<Props> {
 
         this.overlay = window.document.createElement('canvas');
         this.canvas.appendChild(this.overlay);
+
+        this.overlay.id = 'cvat-side-image-overlay';
+        this.background.id = 'cvat-side-image-background';
 
         this.image = null;
 
@@ -76,19 +89,22 @@ class LeftCameraImages extends React.PureComponent<Props> {
         // image.src = 'https://assets.pixolum.com/blog/wp-content/uploads/2019/09/Blumen-Fotografieren-50mm-800x533.jpg';
     }
 
-    public componentDidMount(): void {
-        const [wrapper] = window.document.getElementsByClassName('cvat-side-image-container');
-        wrapper.appendChild(this.html());
+    // reload image and draw rectangles on top
+    public update() {
+        let annotations = this.props.annotations.filter((e) => e.objectType !== ObjectType.TAG);
+        for (let an of annotations) {
+            console.log(an);
+        }
 
         this.props.frameData
             .data((): void => {
                 this.image = null;
             })
             .then((data: CanvasImage): void => {
-                console.log('got image');
+                console.log('got image', this.props.annotations);
                 let image = data.imageData;
                 let ctx = this.background.getContext('2d');
-                var ratio = image.height / image.width;
+                let ratio = image.height / image.width;
                 let targetHeight = ratio * this.background.width;
                 this.background.height = targetHeight;
                 this.overlay.height = targetHeight;
@@ -103,6 +119,7 @@ class LeftCameraImages extends React.PureComponent<Props> {
                     this.background.width,
                     targetHeight,
                 );
+
                 // see https://eloquentjavascript.net/17_canvas.html
                 let cx = this.overlay.getContext('2d');
                 cx.strokeStyle = 'red';
@@ -112,6 +129,20 @@ class LeftCameraImages extends React.PureComponent<Props> {
             .catch((exception: any): void => {
                 throw exception;
             });
+    }
+
+    public componentDidUpdate(prevProps: Props): void {
+        if (prevProps.frameData !== this.props.frameData) {
+            this.update();
+        }
+    }
+
+    public componentDidMount(): void {
+        const [wrapper] = window.document.getElementsByClassName('cvat-side-image-container');
+        wrapper.appendChild(this.html());
+        this.update();
+
+        // ,
 
         // var draw = SVG('mydiv').size(300, 130)
         // var rect = draw.rect(100, 100).fill('#f06').move(20, 20)

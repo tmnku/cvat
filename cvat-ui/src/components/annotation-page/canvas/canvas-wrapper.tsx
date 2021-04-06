@@ -641,6 +641,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     }
 
     private updateCanvas(): void {
+        console.log('update canvas');
         const { curZLayer, annotations, frameData, canvasInstance } = this.props;
 
         if (frameData !== null) {
