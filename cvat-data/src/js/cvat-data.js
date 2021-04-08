@@ -190,6 +190,7 @@ class FrameProvider {
     }
 
     async startDecode() {
+        console.log('decoding images')
         const release = await this._mutex.acquire();
         try {
             const height = this._height;
@@ -286,6 +287,7 @@ class FrameProvider {
                 }
                 this._decodeThreadCount++;
             } else {
+                console.log('zip decoder');
                 const worker = new ZipDecoder();
                 let index = start;
 

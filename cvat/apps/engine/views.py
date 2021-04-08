@@ -411,6 +411,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
     )
     @action(detail=True, methods=['POST', 'GET'])
     def data(self, request, pk):
+        print('got some data')
         if request.method == 'POST':
             db_task = self.get_object() # call check_object_permissions as well
             serializer = DataSerializer(data=request.data)
@@ -439,7 +440,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             data_id = request.query_params.get('number', None)
             data_quality = request.query_params.get('quality', 'compressed')
 
-            possible_data_type_values = ('chunk', 'frame', 'preview', 'context_image')
+            possible_data_type_values = ('chunk', 'frame', 'preview', 'context_image', 'bev', 'cam_0', 'cam_1')
             possible_quality_values = ('compressed', 'original')
 
             try:
@@ -484,6 +485,17 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
 
                 elif data_type == 'preview':
                     return sendfile(request, frame_provider.get_preview())
+                elif data_type.startswith('cam_') or data_type == 'bev':
+                    print('retrieving camera {}'.format(data_type))
+                    data_id = int(data_id)
+                    image = Image.objects.get(data_id=db_task.data_id, frame=data_id, camera=data_type)
+                    path = os.path.join(image.data.get_upload_dirname(), image.path)
+                    image = cv2.imread(path)
+                    print('shape', image.shape)
+                    success, result = cv2.imencode('.JPEG', image)
+                    if not success:
+                        raise Exception("Failed to encode image to '%s' format" % (".jpeg"))
+                    return HttpResponse(io.BytesIO(result.tobytes()), content_type="image/jpeg")
 
                 elif data_type == 'context_image':
                     if db_task.dimension == DimensionType.DIM_3D:

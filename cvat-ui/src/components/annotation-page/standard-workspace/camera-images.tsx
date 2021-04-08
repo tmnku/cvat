@@ -101,7 +101,7 @@ class LeftCameraImages extends React.PureComponent<Props> {
                 this.image = null;
             })
             .then((data: CanvasImage): void => {
-                console.log('got image', this.props.annotations);
+                console.log('got mini image');
                 let image = data.imageData;
                 let ctx = this.background.getContext('2d');
                 let ratio = image.height / image.width;

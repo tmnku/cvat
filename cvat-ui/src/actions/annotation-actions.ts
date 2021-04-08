@@ -872,6 +872,7 @@ export function closeJob(): ThunkAction {
 export function getJobAsync(tid: number, jid: number, initialFrame: number, initialFilters: object[]): ThunkAction {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
+            console.log('get job async');
             const state: CombinedState = getStore().getState();
             const filters = initialFilters;
             const {

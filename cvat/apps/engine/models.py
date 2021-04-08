@@ -158,9 +158,13 @@ class Image(models.Model):
     frame = models.PositiveIntegerField()
     width = models.PositiveIntegerField()
     height = models.PositiveIntegerField()
+    camera = models.CharField(max_length=128, default='')
 
     class Meta:
         default_permissions = ()
+
+    def __str__(self):
+        return self.path
 
 class Project(models.Model):
     name = SafeCharField(max_length=256)

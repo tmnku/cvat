@@ -107,6 +107,7 @@
     }
 
     FrameData.prototype.data.implementation = async function (onServerRequest) {
+        console.log('fetching data')
         return new Promise((resolve, reject) => {
             const resolveWrapper = (data) => {
                 this._data = {
@@ -614,6 +615,7 @@
         step,
         dimension,
     ) {
+        console.log(`get frame ${frame}`)
         if (!(taskID in frameDataCache)) {
             const blockType = chunkType === 'video' ? cvatData.BlockType.MP4VIDEO : cvatData.BlockType.ARCHIVE;
 

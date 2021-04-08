@@ -467,6 +467,8 @@
 
             async function createTask(taskSpec, taskDataSpec, onUpdate) {
                 const { backendAPI } = config;
+                console.log('creating task');
+                console.log({taskSpec, taskDataSpec})
 
                 async function wait(id) {
                     return new Promise((resolve, reject) => {

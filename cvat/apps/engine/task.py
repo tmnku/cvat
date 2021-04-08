@@ -209,6 +209,7 @@ def _download_data(urls, upload_dir):
 
 @transaction.atomic
 def _create_thread(tid, data):
+    print('create thread')
     slogger.glob.info("create task #{}".format(tid))
 
     db_task = models.Task.objects.select_for_update().get(pk=tid)
@@ -416,6 +417,7 @@ def _create_thread(tid, data):
                 manifest.init_index()
                 counter = itertools.count()
                 for _, chunk_frames in itertools.groupby(extractor.frame_range, lambda x: next(counter) // db_data.chunk_size):
+# chunks paths contain full paths so we can use it to get camera positions
                     chunk_paths = [(extractor.get_path(i), i) for i in chunk_frames]
                     img_sizes = []
 
@@ -426,13 +428,19 @@ def _create_thread(tid, data):
                         else:
                             resolution = extractor.get_image_size(frame_id)
                         img_sizes.append(resolution)
+# we need to extend image so we can save camera position, cam_id='fr'... and get frame from filename
+# chunks can possibly ripp thigs appart
+                    new_images = []
+                    for (path, frame), (w, h) in zip(chunk_paths, img_sizes):
+                        frame_number = int(os.path.basename(path).split('.')[0])
+                        parent_dir = os.path.basename(os.path.split(path)[0])
+                        print('saving frame {}, {}'.format(frame_number, parent_dir))
 
-                    db_images.extend([
-                        models.Image(data=db_data,
-                            path=os.path.relpath(path, upload_dir),
-                            frame=frame, width=w, height=h)
-                        for (path, frame), (w, h) in zip(chunk_paths, img_sizes)
-                    ])
+                        new_images.append(models.Image(data=db_data,
+                        path=os.path.relpath(path, upload_dir),
+                        frame=frame_number, width=w, height=h, camera=parent_dir))
+
+                    db_images.extend(new_images)
 
     if db_data.storage_method == StorageMethodChoice.FILE_SYSTEM or not settings.USE_CACHE:
         counter = itertools.count()
