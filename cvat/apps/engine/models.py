@@ -166,6 +166,14 @@ class Image(models.Model):
     def __str__(self):
         return self.path
 
+class Calib(models.Model):
+    # calib = models.CharField(default='')
+    data = models.ForeignKey(Data, on_delete=models.CASCADE, related_name="calibfile", null=True)
+    path = models.CharField(max_length=1024, default='')
+
+    class Meta:
+        default_permissions = ()
+
 class Project(models.Model):
     name = SafeCharField(max_length=256)
     owner = models.ForeignKey(User, null=True, blank=True,

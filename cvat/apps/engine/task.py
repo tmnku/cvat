@@ -404,7 +404,7 @@ def _create_thread(tid, data):
                             sources=extractor.absolute_source_paths,
                             data_dir=upload_dir
                         )
-                        content = meta_info.content
+                        content = meta_info.content # contains image files with path
                     else:
                         content = []
                         for source in extractor.absolute_source_paths:
@@ -441,6 +441,16 @@ def _create_thread(tid, data):
                         frame=frame_number, width=w, height=h, camera=parent_dir))
 
                     db_images.extend(new_images)
+
+                # save json file
+                calibfile = os.path.join(db_data.get_upload_dirname(), 'data/calib.json')
+                if os.path.isfile(calibfile):
+                    calib = models.Calib(data=db_data, path=calibfile)
+                    calib.save()
+                    print('saved calib file')
+                else:
+                    raise Exception('Calibration file could not be found under path {}'.format(calibfile))
+
 
     if db_data.storage_method == StorageMethodChoice.FILE_SYSTEM or not settings.USE_CACHE:
         counter = itertools.count()

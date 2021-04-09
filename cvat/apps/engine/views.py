@@ -11,6 +11,7 @@ from datetime import datetime
 from distutils.util import strtobool
 from tempfile import mkstemp
 import cv2
+import json
 
 import django_rq
 from django.shortcuts import get_object_or_404
@@ -18,7 +19,7 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import IntegrityError
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django_filters import rest_framework as filters
@@ -42,7 +43,7 @@ from cvat.apps.dataset_manager.serializers import DatasetFormatsSerializer
 from cvat.apps.engine.frame_provider import FrameProvider
 from cvat.apps.engine.models import (
     Job, StatusChoice, Task, Project, Review, Issue,
-    Comment, StorageMethodChoice, ReviewStatus, StorageChoice, DimensionType, Image
+    Comment, StorageMethodChoice, ReviewStatus, StorageChoice, DimensionType, Image, Calib
 )
 from cvat.apps.engine.serializers import (
     AboutSerializer, AnnotationFileSerializer, BasicUserSerializer,
@@ -439,8 +440,9 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             data_type = request.query_params.get('type', None)
             data_id = request.query_params.get('number', None)
             data_quality = request.query_params.get('quality', 'compressed')
+            data_camera = request.query_params.get('camera', None)
 
-            possible_data_type_values = ('chunk', 'frame', 'preview', 'context_image', 'bev', 'cam_0', 'cam_1')
+            possible_data_type_values = ('chunk', 'frame', 'preview', 'context_image', 'image', 'calib')
             possible_quality_values = ('compressed', 'original')
 
             try:
@@ -485,18 +487,23 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
 
                 elif data_type == 'preview':
                     return sendfile(request, frame_provider.get_preview())
-                elif data_type.startswith('cam_') or data_type == 'bev':
-                    print('retrieving camera {}'.format(data_type))
+                elif data_type == 'image':
+                    if data_camera is Null:
+                        raise Exception('no camera was specified in request')
+                    print('retrieving camera {}'.format(data_camera))
                     data_id = int(data_id)
-                    image = Image.objects.get(data_id=db_task.data_id, frame=data_id, camera=data_type)
+                    image = Image.objects.get(data_id=db_task.data_id, frame=data_id, camera=data_camera)
                     path = os.path.join(image.data.get_upload_dirname(), image.path)
                     image = cv2.imread(path)
-                    print('shape', image.shape)
                     success, result = cv2.imencode('.JPEG', image)
                     if not success:
                         raise Exception("Failed to encode image to '%s' format" % (".jpeg"))
                     return HttpResponse(io.BytesIO(result.tobytes()), content_type="image/jpeg")
-
+                elif data_type == 'calib':
+                    calib = Calib.objects.get(data_id=db_task.data_id)
+                    with open(calib.path, 'r') as infile:
+                        jsondata = json.load(infile)
+                    return JsonResponse(jsondata)
                 elif data_type == 'context_image':
                     if db_task.dimension == DimensionType.DIM_3D:
                         data_id = int(data_id)
