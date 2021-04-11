@@ -1,9 +1,9 @@
 import React from 'react';
 import 'cvat-canvas/src/typescript/svg.patch';
 import { Image as CanvasImage } from 'cvat-canvas/src/typescript/canvasModel';
-import './canvas-container.css';
 import { CombinedState, ObjectType } from 'reducers/interfaces';
 import { connect } from 'react-redux';
+import './canvas-container.css';
 
 interface Props {
     activeLabelID: number;
@@ -43,11 +43,13 @@ class LeftCameraImages extends React.PureComponent<Props> {
     overlay: HTMLCanvasElement;
     content: SVGSVGElement;
     image: CanvasImage | null;
+    name: string;
 
     constructor(props: Props) {
         super(props);
-        console.log('camera name is:', props.camera);
+
         this.canvas = window.document.createElement('div');
+        this.canvas.classList.add('cvat-side-image-container');
         this.background = window.document.createElement('canvas');
         this.canvas.appendChild(this.background);
         this.content = window.document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -62,6 +64,10 @@ class LeftCameraImages extends React.PureComponent<Props> {
 
         this.background.width = 300;
         this.overlay.width = 300;
+
+        this.name = `cvat-side-image-div-${props.camera}`;
+
+        console.log('camera name is:', this.name);
     }
 
     // reload image and draw rectangles on top
@@ -76,9 +82,8 @@ class LeftCameraImages extends React.PureComponent<Props> {
                 console.log(`this is the calib file`, data);
             });
 
-        this.props.frameData.getCameraImage('front_left')
+        this.props.frameData.getCameraImage(this.props.camera)
             .then((data: any): void => {
-                console.log(`got mini image of type ${typeof data}`);
                 let image = new Image()
 
                 image.onload = () => {
@@ -119,7 +124,7 @@ class LeftCameraImages extends React.PureComponent<Props> {
     }
 
     public componentDidMount(): void {
-        const [wrapper] = window.document.getElementsByClassName('cvat-side-image-container');
+        const wrapper = window.document.getElementById(this.name);
         wrapper.appendChild(this.html());
         this.update();
     }
@@ -130,7 +135,7 @@ class LeftCameraImages extends React.PureComponent<Props> {
 
     public render() {
         return (
-            <div className='cvat-side-image-container' />
+            <div id={this.name} />
         );
     }
 }
