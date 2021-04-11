@@ -5,6 +5,7 @@
 import './styles.scss';
 import React from 'react';
 import Layout from 'antd/lib/layout';
+import {Row, Col} from 'antd'
 
 import CanvasWrapperContainer from 'containers/annotation-page/canvas/canvas-wrapper';
 import ControlsSideBarContainer from 'containers/annotation-page/standard-workspace/controls-side-bar/controls-side-bar';
@@ -14,28 +15,16 @@ import ObjectsListContainer from 'containers/annotation-page/standard-workspace/
 import ObjectSideBarComponent from 'components/annotation-page/standard-workspace/objects-side-bar/objects-side-bar';
 import CanvasPointContextMenuComponent from 'components/annotation-page/canvas/canvas-point-context-menu';
 import IssueAggregatorComponent from 'components/annotation-page/review/issues-aggregator';
-import LeftCameraImages from 'components/annotation-page/standard-workspace/camera-images';
+import LeftCameraImagesContainer from 'components/annotation-page/standard-workspace/camera-images-container';
 
 export default function StandardWorkspaceComponent(): JSX.Element {
     return (
         <Layout hasSider className='cvat-standard-workspace'>
             <ControlsSideBarContainer />
-            <LeftCameraImages />
+            <LeftCameraImagesContainer />
+
             <Layout.Content style={{ position: 'relative' }}>
                 <CanvasWrapperContainer />
-                {/* <Row>
-                    <Col span={4}>
-                        my stuff<br/>
-                        comes<br/>
-                        here
-                    </Col>
-                    <Col span={16}>
-                        <CanvasWrapperContainer />
-                    </Col>
-                    <Col span={4}>
-                        my stuff
-                    </Col>
-                </Row> */}
             </Layout.Content>
             <ObjectSideBarComponent objectsList={<ObjectsListContainer />} />
             <PropagateConfirmContainer />

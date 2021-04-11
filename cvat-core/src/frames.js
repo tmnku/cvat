@@ -105,11 +105,33 @@
             return result;
         }
 
-        async getCalibFile(tid) {
-            const result = await serverProxy.frames.getCalibFile(tid);
+        async getCalibFile() {
+            const result = await serverProxy.frames.getCalibFile(this.tid);
             return result;
         }
 
+        async getCameraImage(camera) {
+            return new Promise((resolve, reject) => {
+                // Just go to server and get preview (no any cache)
+                serverProxy.frames
+                    .getCameraImage(this.tid, this.number, camera)
+                    .then((result) => {
+                        if (isNode) {
+                            // eslint-disable-next-line no-undef
+                            resolve(global.Buffer.from(result, 'binary').toString('base64'));
+                        } else if (isBrowser) {
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                resolve(reader.result);
+                            };
+                            reader.readAsDataURL(result);
+                        }
+                    })
+                    .catch((error) => {
+                        reject(error);
+                    });
+            });
+        }
     }
 
     FrameData.prototype.data.implementation = async function (onServerRequest) {

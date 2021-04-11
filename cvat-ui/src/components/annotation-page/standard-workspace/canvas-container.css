@@ -1,17 +1,9 @@
-.cvat-side-image-container {
-    position: relative;
-}
-
-.cvat-side-image-container canvas {
+.cvat-side-image-canvas {
     position: absolute;
     top: 0;
     left: 0;
 }
 
-#cvat-side-image-background {
-    z-index: 0;
-}
-
-#cvat-side-image-overlay {
-    z-index: 1;
+.cvat-side-image-container {
+    position: relative;
 }

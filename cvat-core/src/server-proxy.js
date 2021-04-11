@@ -720,6 +720,23 @@
                 return response.data;
             }
 
+            async function getCameraImage(tid, number, camera) {
+                const { backendAPI } = config;
+
+                let response = null;
+                try {
+                    response = await Axios.get(`${backendAPI}/tasks/${tid}/data?type=image&number=${number}&camera=${camera}`, {
+                        proxy: config.proxy,
+                        responseType: 'blob',
+                    });
+                } catch (errorData) {
+                    const code = errorData.response ? errorData.response.status : errorData.code;
+                    throw new ServerError(`Could not get camera image frame for the task ${tid} from the server`, code);
+                }
+
+                return response.data;
+            }
+
             async function getCalibFile(tid) {
                 const { backendAPI } = config;
                 console.log(`requesting calib file for task ${tid}`)
@@ -1103,6 +1120,7 @@
                             getPreview,
                             getImageContext,
                             getCalibFile,
+                            getCameraImage,
                         }),
                         writable: false,
                     },

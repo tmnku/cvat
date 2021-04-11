@@ -1,20 +1,15 @@
 import React from 'react';
-import Layout from 'antd/lib/layout';
-import { Row, Col, Divider } from 'antd';
-// import SVG from 'svg.js';
-import SVG from 'svg.js';
 import 'cvat-canvas/src/typescript/svg.patch';
 import { Image as CanvasImage } from 'cvat-canvas/src/typescript/canvasModel';
 import './canvas-container.css';
-// import Snap from 'snapsvg';
 import { CombinedState, ObjectType } from 'reducers/interfaces';
 import { connect } from 'react-redux';
-// import { ObjectType } from 'cvat-ui/src/reducers/interfaces';
 
 interface Props {
     activeLabelID: number;
     frameData: any;
     annotations: any[];
+    camera: string;
 }
 
 function mapStateToProps(state: CombinedState): Props {
@@ -51,6 +46,7 @@ class LeftCameraImages extends React.PureComponent<Props> {
 
     constructor(props: Props) {
         super(props);
+        console.log('camera name is:', props.camera);
         this.canvas = window.document.createElement('div');
         this.background = window.document.createElement('canvas');
         this.canvas.appendChild(this.background);
@@ -59,34 +55,13 @@ class LeftCameraImages extends React.PureComponent<Props> {
         this.overlay = window.document.createElement('canvas');
         this.canvas.appendChild(this.overlay);
 
-        this.overlay.id = 'cvat-side-image-overlay';
-        this.background.id = 'cvat-side-image-background';
+        this.background.classList.add('cvat-side-image-canvas');
+        this.overlay.classList.add('cvat-side-image-canvas');
 
         this.image = null;
 
         this.background.width = 300;
         this.overlay.width = 300;
-
-        // let image = new Image();
-        // image.onload = () => {
-        //     // Make sure the image is loaded first otherwise nothing will draw.
-        //     var ratio = image.height / image.width;
-        //     let targetHeight = ratio * this.background.width;
-        //     this.background.height = targetHeight;
-        //     this.overlay.height = targetHeight;
-        //     ctx.drawImage(
-        //         image,
-        //         0,
-        //         0,
-        //         image.width,
-        //         image.height, // source rectangle
-        //         0,
-        //         0,
-        //         this.background.width,
-        //         targetHeight,
-        //     );
-        // };
-        // image.src = 'https://assets.pixolum.com/blog/wp-content/uploads/2019/09/Blumen-Fotografieren-50mm-800x533.jpg';
     }
 
     // reload image and draw rectangles on top
@@ -96,40 +71,41 @@ class LeftCameraImages extends React.PureComponent<Props> {
             console.log(an);
         }
 
-        // this.props.frameData.getCalibFile(39)
-        //     .then((data: any) => {
-        //         console.log(`this is the calib file`, data);
-        //     });
+        this.props.frameData.getCalibFile()
+            .then((data: any) => {
+                console.log(`this is the calib file`, data);
+            });
 
-        this.props.frameData
-            .data((): void => {
-                this.image = null;
-            })
-            .then((data: CanvasImage): void => {
-                console.log('got mini image');
-                let image = data.imageData;
-                let ctx = this.background.getContext('2d');
-                let ratio = image.height / image.width;
-                let targetHeight = ratio * this.background.width;
-                this.background.height = targetHeight;
-                this.overlay.height = targetHeight;
-                ctx.drawImage(
-                    image,
-                    0,
-                    0,
-                    image.width,
-                    image.height, // source rectangle
-                    0,
-                    0,
-                    this.background.width,
-                    targetHeight,
-                );
+        this.props.frameData.getCameraImage('front_left')
+            .then((data: any): void => {
+                console.log(`got mini image of type ${typeof data}`);
+                let image = new Image()
 
-                // see https://eloquentjavascript.net/17_canvas.html
-                let cx = this.overlay.getContext('2d');
-                cx.strokeStyle = 'red';
-                cx.lineWidth = 3;
-                cx.strokeRect(20, 20, 50, 50);
+                image.onload = () => {
+
+                    let ratio = image.height / image.width;
+                    let targetHeight = ratio * this.background.width;
+                    this.background.height = targetHeight;
+                    this.overlay.height = targetHeight;
+                    let ctx = this.background.getContext('2d');
+                    ctx.drawImage(
+                            image,
+                            0,
+                            0,
+                            image.width,
+                            image.height, // source rectangle
+                            0,
+                            0,
+                            this.background.width,
+                            targetHeight,
+                        );
+                    // see https://eloquentjavascript.net/17_canvas.html
+                    let cx = this.overlay.getContext('2d');
+                    cx.strokeStyle = 'red';
+                    cx.lineWidth = 3;
+                    cx.strokeRect(20, 20, 50, 50);
+                };
+                image.src = data;
             })
             .catch((exception: any): void => {
                 throw exception;
@@ -146,18 +122,6 @@ class LeftCameraImages extends React.PureComponent<Props> {
         const [wrapper] = window.document.getElementsByClassName('cvat-side-image-container');
         wrapper.appendChild(this.html());
         this.update();
-
-        // ,
-
-        // var draw = SVG('mydiv').size(300, 130)
-        // var rect = draw.rect(100, 100).fill('#f06').move(20, 20)
-
-        // let snap = Snap("#mydiv");
-
-        // let bigCircle = snap.circle(50, 50, 25);
-
-        // let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        // let cont = window.getElement
     }
 
     public html() {
@@ -165,20 +129,8 @@ class LeftCameraImages extends React.PureComponent<Props> {
     }
 
     public render() {
-        // return <h1>This is my component</h1>
         return (
-            <Layout.Sider className='cvat-camera-images-sidebar' theme='light' width={300}>
-                <div className='cvat-side-image-container' id='mydiv' />
-                {/* <Row>
-
-            </Row>
-            <Row>
-            My sider
-            </Row>
-            <Row>
-            My sider
-            </Row> */}
-            </Layout.Sider>
+            <div className='cvat-side-image-container' />
         );
     }
 }
