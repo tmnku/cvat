@@ -193,13 +193,17 @@ class PdfReader(ImageListReader):
             stop=stop,
         )
 
+def accept_file(f, pattern):
+    parent_dir = os.path.basename(os.path.split(f)[0])
+    return parent_dir in pattern
+
 class ZipReader(ImageListReader):
     def __init__(self, source_path, step=1, start=0, stop=None):
         print('created zipreader')
         self._dimension = DimensionType.DIM_2D
         self._zip_source = zipfile.ZipFile(source_path[0], mode='a')
         self.extract_dir = source_path[1] if len(source_path) > 1 else None
-        file_list = [f for f in self._zip_source.namelist() if files_to_ignore(f) and get_mime(f) == 'image']
+        file_list = [f for f in self._zip_source.namelist() if files_to_ignore(f) and accept_file(f, 'bev') and get_mime(f) == 'image']
         super().__init__(file_list, step, start, stop)
 
     def __del__(self):

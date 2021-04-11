@@ -488,7 +488,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                 elif data_type == 'preview':
                     return sendfile(request, frame_provider.get_preview())
                 elif data_type == 'image':
-                    if data_camera is Null:
+                    if data_camera is None:
                         raise Exception('no camera was specified in request')
                     print('retrieving camera {}'.format(data_camera))
                     data_id = int(data_id)
@@ -503,6 +503,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                     calib = Calib.objects.get(data_id=db_task.data_id)
                     with open(calib.path, 'r') as infile:
                         jsondata = json.load(infile)
+                    print('serving calib file')
                     return JsonResponse(jsondata)
                 elif data_type == 'context_image':
                     if db_task.dimension == DimensionType.DIM_3D:

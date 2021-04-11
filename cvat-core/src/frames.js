@@ -104,6 +104,12 @@
             const result = await PluginRegistry.apiWrapper.call(this, FrameData.prototype.data, onServerRequest);
             return result;
         }
+
+        async getCalibFile(tid) {
+            const result = await serverProxy.frames.getCalibFile(tid);
+            return result;
+        }
+
     }
 
     FrameData.prototype.data.implementation = async function (onServerRequest) {

@@ -720,6 +720,29 @@
                 return response.data;
             }
 
+            async function getCalibFile(tid) {
+                const { backendAPI } = config;
+                console.log(`requesting calib file for task ${tid}`)
+                let response = null;
+                try {
+                    response = await Axios.get(
+                        `${backendAPI}/tasks/${tid}/data?type=calib`,
+                        {
+                            proxy: config.proxy,
+                            responseType: 'json',
+                        },
+                    );
+                } catch (errorData) {
+                    const code = errorData.response ? errorData.response.status : errorData.code;
+                    throw new ServerError(
+                        `Could not get calibration file for the task ${tid} from the server`,
+                        code,
+                    );
+                }
+
+                return response.data;
+            }
+
             async function getImageContext(tid, frame) {
                 const { backendAPI } = config;
 
@@ -1079,6 +1102,7 @@
                             getMeta,
                             getPreview,
                             getImageContext,
+                            getCalibFile,
                         }),
                         writable: false,
                     },

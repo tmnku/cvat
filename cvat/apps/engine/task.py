@@ -12,6 +12,8 @@ from traceback import print_exception
 from urllib import parse as urlparse
 from urllib import request as urlrequest
 import requests
+import json
+
 
 from cvat.apps.engine.media_extractors import get_mime, MEDIA_TYPES, Mpeg4ChunkWriter, ZipChunkWriter, Mpeg4CompressedChunkWriter, ZipCompressedChunkWriter, ValidateDimension
 from cvat.apps.engine.models import DataChoice, StorageMethodChoice, StorageChoice, RelatedFile
@@ -207,9 +209,19 @@ def _download_data(urls, upload_dir):
 
     return list(local_files.keys())
 
+def get_files(search_dir, filter_parent_dir=''):
+    all_files = []
+    for path, _, files in os.walk(search_dir):
+        for name in files:
+            full_path = os.path.join(path, name)
+            parent_dir = os.path.basename(os.path.split(full_path)[0])
+            if filter_parent_dir == parent_dir or filter_parent_dir == '':
+                all_files.append(full_path)
+    return sorted(all_files)
+
+
 @transaction.atomic
 def _create_thread(tid, data):
-    print('create thread')
     slogger.glob.info("create task #{}".format(tid))
 
     db_task = models.Task.objects.select_for_update().get(pk=tid)
@@ -396,6 +408,7 @@ def _create_thread(tid, data):
                         else "Uploaded video does not support a quick way of task creating."
                     _update_status("{} The task will be created using the old method".format(base_msg))
             else:# images, archive, pdf
+                # only keep bev images
                 db_data.size = len(extractor)
                 manifest = ImageManifestManager(db_data.get_manifest_path())
                 if not manifest_file:
@@ -430,17 +443,15 @@ def _create_thread(tid, data):
                         img_sizes.append(resolution)
 # we need to extend image so we can save camera position, cam_id='fr'... and get frame from filename
 # chunks can possibly ripp thigs appart
-                    new_images = []
                     for (path, frame), (w, h) in zip(chunk_paths, img_sizes):
                         frame_number = int(os.path.basename(path).split('.')[0])
                         parent_dir = os.path.basename(os.path.split(path)[0])
                         print('saving frame {}, {}'.format(frame_number, parent_dir))
 
-                        new_images.append(models.Image(data=db_data,
+                        db_images.append(models.Image(data=db_data,
                         path=os.path.relpath(path, upload_dir),
                         frame=frame_number, width=w, height=h, camera=parent_dir))
 
-                    db_images.extend(new_images)
 
                 # save json file
                 calibfile = os.path.join(db_data.get_upload_dirname(), 'data/calib.json')
@@ -448,8 +459,24 @@ def _create_thread(tid, data):
                     calib = models.Calib(data=db_data, path=calibfile)
                     calib.save()
                     print('saved calib file')
+
+                    with open(calibfile, 'r') as infile:
+                        jsondata = json.load(infile)
+                        keys = jsondata.keys()
+
+                    for key in keys:
+                        files = get_files(upload_dir, key)
+                        for path in files:
+                            frame_number = int(os.path.basename(path).split('.')[0])
+                            parent_dir = os.path.basename(os.path.split(path)[0])
+                            db_images.append(models.Image(data=db_data, path=path,
+                            frame=frame_number, width=w, height=h, camera=parent_dir))
                 else:
                     raise Exception('Calibration file could not be found under path {}'.format(calibfile))
+
+                # TODO
+                # now search for all other images (possibly look up names in calib file)
+                # and save them separately
 
 
     if db_data.storage_method == StorageMethodChoice.FILE_SYSTEM or not settings.USE_CACHE:

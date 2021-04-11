@@ -96,6 +96,11 @@ class LeftCameraImages extends React.PureComponent<Props> {
             console.log(an);
         }
 
+        // this.props.frameData.getCalibFile(39)
+        //     .then((data: any) => {
+        //         console.log(`this is the calib file`, data);
+        //     });
+
         this.props.frameData
             .data((): void => {
                 this.image = null;
