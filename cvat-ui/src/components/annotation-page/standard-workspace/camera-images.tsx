@@ -3,6 +3,7 @@ import 'cvat-canvas/src/typescript/svg.patch';
 import { Image as CanvasImage } from 'cvat-canvas/src/typescript/canvasModel';
 import { CombinedState, ObjectType } from 'reducers/interfaces';
 import { connect } from 'react-redux';
+import { matrix, dot, transpose, multiply, inv, subset, index } from 'mathjs';
 import './canvas-container.css';
 
 interface Props {
@@ -42,12 +43,14 @@ class LeftCameraImages extends React.PureComponent<Props> {
     background: HTMLCanvasElement;
     overlay: HTMLCanvasElement;
     content: SVGSVGElement;
-    image: CanvasImage | null;
+    image: Image | null;
     depth: Image | null;
     name: string;
     depthCanvas: HTMLCanvasElement;
     depthCtx: any;
-    calib: any;
+    K: any;
+    camera_pose: any;
+    depth_pose: any;
 
     constructor(props: Props) {
         super(props);
@@ -68,7 +71,9 @@ class LeftCameraImages extends React.PureComponent<Props> {
         this.depth = null;
         this.depthCanvas = document.createElement('canvas');
         this.depthCtx = this.depthCanvas.getContext('2d');
-        this.calib = null;
+        this.K = null;
+        this.camera_pose = null;
+        this.depth_pose = null;
 
         this.background.width = 300;
         this.overlay.width = 300;
@@ -93,16 +98,39 @@ class LeftCameraImages extends React.PureComponent<Props> {
             ctx.lineWidth = 3;
             let annotations = this.props.annotations.filter((e) => e.objectType !== ObjectType.TAG);
             for (let an of annotations) {
-                let depth = this.getDepthAt(an.points[0], an.points[1]);
-                // TODO compute world point
-                // TODO project from world to this camera image
+                let x_i = an.points[0];
+                let y_i = an.points[1];
+                let depth = this.getDepthAt(x_i, y_i);
 
-                // TODO get width and height of side images from somewhere
-                let x = an.points[0] / this.props.frameData.width * 300;
-                let y = an.points[1] / this.props.frameData.height * 160;
-                let w = 5;
-                let h = 5;
-                ctx.strokeRect(x, y, w, h);
+                if (this.K) {
+                    let px_to_meters = 100.0/this.depth.width;
+                    let x_w = -(y_i-this.depth.height/2)*px_to_meters;
+                    let y_w = -(x_i-this.depth.width/2)*px_to_meters;
+                    let z_w = 50-depth;
+                    let p = matrix([[x_w],[y_w],[z_w],[1]]);
+
+                    console.log(`wordl point at ${p}`);
+
+                    let vehicle_to_cam = matrix([[0,-1,0,0], [0,0,-1,0], [1,0,0,0], [0,0,0,1]]);
+
+                    let Rt = multiply(vehicle_to_cam, inv(this.camera_pose));
+                    let C = multiply(this.K, Rt.subset(index([0, 1, 2], [0, 1, 2, 3])));
+                    let uvw = multiply(C, p);
+
+                    let w = uvw.get([2, 0]);
+                    if (w < 0) {
+                        continue;
+                    }
+                    let u = uvw.get([0, 0]) / w;
+                    let v = uvw.get([1, 0]) / w;
+
+                    console.log(`uv: ${u}, ${v}`);
+
+                    // TODO get width and height of side images from somewhere. for now we scale down
+                    let x = u / this.image.width * 300;
+                    let y = v / this.image.height * 160;
+                    ctx.strokeRect(x, y, 5, 5);
+                }
             }
         }
     }
@@ -111,7 +139,10 @@ class LeftCameraImages extends React.PureComponent<Props> {
     public onFrameChange() {
         this.props.frameData.getCalibFile()
             .then((data: any) => {
-                console.log(`this is the calib file`, data.depth);
+                this.K = matrix(data[this.props.camera].K);
+                this.camera_pose = matrix(data[this.props.camera].pose);
+                this.depth_pose = matrix(data.depth.pose);
+
             });
 
         this.props.frameData.getCameraImage('depth')
@@ -130,20 +161,20 @@ class LeftCameraImages extends React.PureComponent<Props> {
 
         this.props.frameData.getCameraImage(this.props.camera)
         .then((data: any): void => {
-            let image = new Image()
-            image.onload = () => {
-                let ratio = image.height / image.width;
+            this.image = new Image()
+            this.image.onload = () => {
+                let ratio = this.image.height / this.image.width;
                 let targetHeight = ratio * this.background.width;
                 this.background.height = targetHeight;
                 this.overlay.height = targetHeight;
                 let ctx = this.background.getContext('2d');
                 if (ctx) {
                     ctx.drawImage(
-                            image,
+                        this.image,
                             0,
                             0,
-                            image.width,
-                            image.height, // source rectangle
+                            this.image.width,
+                            this.image.height, // source rectangle
                             0,
                             0,
                             this.background.width,
@@ -152,7 +183,7 @@ class LeftCameraImages extends React.PureComponent<Props> {
                     this.drawBoxes();
                 }
             };
-            image.src = data;
+            this.image.src = data;
         })
         .catch((exception: any): void => {
             throw exception;
