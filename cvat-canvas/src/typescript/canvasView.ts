@@ -1150,6 +1150,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                         // https://www.w3.org/TR/2dcontext/#dom-context-2d-putimagedata
                         ctx.drawImage(this.background, 0, 0);
                     } else {
+                        // this is executed
                         ctx.drawImage(image.imageData, 0, 0);
                     }
                 }
