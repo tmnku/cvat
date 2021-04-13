@@ -1991,6 +1991,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             .move(xtl, ytl)
             .addClass('cvat_canvas_shape');
 
+
         if (state.occluded) {
             rect.addClass('cvat_canvas_shape_occluded');
         }
