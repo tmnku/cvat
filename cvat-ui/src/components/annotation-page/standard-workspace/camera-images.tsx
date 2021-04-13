@@ -109,15 +109,26 @@ class LeftCameraImages extends React.PureComponent<Props> {
             let width = abs(y1-y0);
             let height = 2;
 
+            // center of box
             let posX = (x0+x1)/2;
             let posY = (y0+y1)/2;
-            let depth = this.getDepthAt(posX, posY);
+
+            // get depth of the four corners
+
+            let baseDepth = 0;
+            for (const vertex of this.vertexTable.slice(0, 4)) {
+                baseDepth += this.getDepthAt(posX+vertex[0]*length/2, posY+vertex[1]*width/2);
+            }
+            baseDepth /= 4;
 
             let uvs = [];
+            let i = 0;
             for (const vertex of this.vertexTable) {
-                const p = this.bevToVehicleCoords(posX+vertex[0]*length, posY+vertex[1]*width, depth-height*vertex[2]);
+                let depth = i <= 3 ? baseDepth : baseDepth-height*vertex[2];
+                const p = this.bevToVehicleCoords(posX+vertex[0]*length/2, posY+vertex[1]*width/2, depth);
                 const uv = this.projectPoint(p);
                 uvs.push(uv);
+                i++;
             }
 
             // draw edges
@@ -144,12 +155,17 @@ class LeftCameraImages extends React.PureComponent<Props> {
     projectPoint(p: Matrix) : number[] | null {
         let uvw = multiply(this.C, p);
         let w = uvw.get([2, 0]);
-        // check point behind camera
-        if (w < 0) {
+
+        let u: number;
+        let v: number;
+
+        if (w > 0) {
+            u = uvw.get([0, 0]) / w;
+            v = uvw.get([1, 0]) / w;
+        } else {
             return null;
         }
-        let u = uvw.get([0, 0]) / w;
-        let v = uvw.get([1, 0]) / w;
+
         // scale to canvas size
         return [u / this.image.width * this.overlay.width, v / this.image.height * this.overlay.height];
     }
@@ -186,22 +202,7 @@ class LeftCameraImages extends React.PureComponent<Props> {
             }
 
             this.drawBox(...state.points, shapeColor);
-
-            // let x_i = state.points[0];
-            // let y_i = state.points[1];
-            // let depth = this.getDepthAt(x_i, y_i);
-
-            // let p = this.bevToVehicleCoords(x_i, y_i, depth);
-
-            // const uv = this.projectPoint(p);
-            // if (uv) {
-            //     // scale coordinates to scaled image size
-            //     let x = uv[0] / this.image.width * this.overlay.width;
-            //     let y = uv[1] / this.image.height * this.overlay.height;
-            //     ctx.strokeRect(x, y, 5, 5);
-            // }
         }
-
     }
 
     // TODO fetch data once outside this class

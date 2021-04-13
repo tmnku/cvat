@@ -444,7 +444,7 @@ def _create_thread(tid, data):
 # we need to extend image so we can save camera position, cam_id='fr'... and get frame from filename
 # chunks can possibly ripp thigs appart
                     for (path, frame), (w, h) in zip(chunk_paths, img_sizes):
-                        frame_number = int(os.path.basename(path).split('.')[0])
+                        frame_number = int(os.path.basename(path).split('.')[0].split('_')[-1])
                         parent_dir = os.path.basename(os.path.split(path)[0])
                         print('saving frame {}, {}'.format(frame_number, parent_dir))
 
@@ -467,7 +467,7 @@ def _create_thread(tid, data):
                     for key in keys:
                         files = get_files(upload_dir, key)
                         for path in files:
-                            frame_number = int(os.path.basename(path).split('.')[0])
+                            frame_number = int(os.path.basename(path).split('.')[0].split('_')[-1])
                             parent_dir = os.path.basename(os.path.split(path)[0])
                             db_images.append(models.Image(data=db_data, path=path,
                             frame=frame_number, width=w, height=h, camera=parent_dir))
