@@ -495,10 +495,17 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                     image = Image.objects.get(data_id=db_task.data_id, frame=data_id, camera=data_camera)
                     path = os.path.join(image.data.get_upload_dirname(), image.path)
                     image = cv2.imread(path)
-                    success, result = cv2.imencode('.JPEG', image)
-                    if not success:
-                        raise Exception("Failed to encode image to '%s' format" % (".jpeg"))
-                    return HttpResponse(io.BytesIO(result.tobytes()), content_type="image/jpeg")
+                    # sending depth as jpeg would cause large erroneous depths
+                    if data_camera == 'depth':
+                        success, result = cv2.imencode('.PNG', image)
+                        if not success:
+                            raise Exception("Failed to encode image to '%s' format" % (".png"))
+                        return HttpResponse(io.BytesIO(result.tobytes()), content_type="image/png")
+                    else:
+                        success, result = cv2.imencode('.JPEG', image)
+                        if not success:
+                            raise Exception("Failed to encode image to '%s' format" % (".jpeg"))
+                        return HttpResponse(io.BytesIO(result.tobytes()), content_type="image/jpeg")
                 elif data_type == 'calib':
                     calib = Calib.objects.get(data_id=db_task.data_id)
                     with open(calib.path, 'r') as infile:
