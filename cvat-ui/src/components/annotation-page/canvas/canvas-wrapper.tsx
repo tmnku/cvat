@@ -523,8 +523,10 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
         onEditShape(false);
 
-        const { state, points } = event.detail;
+        const { state, points, orientation } = event.detail;
         state.points = points;
+        console.log(`settin state orientation to ${orientation}`);
+        state.orientation = orientation;
         onUpdateAnnotations([state]);
     };
 

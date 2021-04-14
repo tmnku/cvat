@@ -27,6 +27,7 @@ const { Source } = require('./enums');
                 attributes: {},
 
                 points: null,
+                orientation: null,
                 outside: null,
                 occluded: null,
                 keyframe: null,
@@ -57,6 +58,7 @@ const { Source } = require('./enums');
                     this.attributes = false;
 
                     this.points = false;
+                    this.orientation = false;
                     this.outside = false;
                     this.occluded = false;
                     this.keyframe = false;
@@ -200,6 +202,21 @@ const { Source } = require('./enums');
                                 );
                             }
                         },
+                    },
+                    orientation: {
+                        /**
+                         * Object with short group info { color, id }
+                         * @name group
+                         * @type {object}
+                         * @memberof module:API.cvat.classes.ObjectState
+                         * @instance
+                         * @readonly
+                         */
+                        get: () => data.orientation,
+                        set: (orientation) => {
+                            data.updateFlags.orientation = true;
+                            data.orientation = orientation;
+                        }
                     },
                     group: {
                         /**
@@ -385,6 +402,9 @@ const { Source } = require('./enums');
             }
             if (Array.isArray(serialized.points)) {
                 this.points = serialized.points;
+            }
+            if (typeof serialized.orientation === 'number') {
+                this.orientation = serialized.orientation;
             }
             if (typeof serialized.attributes === 'object') {
                 this.attributes = serialized.attributes;

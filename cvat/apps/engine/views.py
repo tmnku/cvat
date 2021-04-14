@@ -720,9 +720,12 @@ class JobViewSet(viewsets.GenericViewSet,
     @action(detail=True, methods=['GET', 'DELETE', 'PUT', 'PATCH'],
         serializer_class=LabeledDataSerializer)
     def annotations(self, request, pk):
+        print('got annotation request to update', request.data)
+
         self.get_object() # force to call check_object_permissions
         if request.method == 'GET':
             data = dm.task.get_job_data(pk)
+            print('got annotation request to send', data)
             return Response(data)
         elif request.method == 'PUT':
             format_name = request.query_params.get("format", "")

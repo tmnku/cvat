@@ -476,6 +476,7 @@ class Shape(models.Model):
     occluded = models.BooleanField(default=False)
     z_order = models.IntegerField(default=0)
     points = FloatArrayField()
+    orientation = models.FloatField(default=0.0)
 
     class Meta:
         abstract = True

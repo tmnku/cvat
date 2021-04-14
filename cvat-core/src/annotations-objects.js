@@ -472,6 +472,7 @@
         constructor(data, clientID, color, injection) {
             super(data, clientID, color, injection);
             this.points = data.points;
+            this.orientation = data.orientation;
             this.occluded = data.occluded;
             this.zOrder = data.z_order;
         }
@@ -484,6 +485,7 @@
                 occluded: this.occluded,
                 z_order: this.zOrder,
                 points: [...this.points],
+                orientation: this.orientation,
                 attributes: Object.keys(this.attributes).reduce((attributeAccumulator, attrId) => {
                     attributeAccumulator.push({
                         spec_id: attrId,
@@ -515,6 +517,7 @@
                 lock: this.lock,
                 zOrder: this.zOrder,
                 points: [...this.points],
+                orientation: this.orientation,
                 attributes: { ...this.attributes },
                 label: this.label,
                 group: this.groupObject,
@@ -551,6 +554,11 @@
 
             this.source = Source.MANUAL;
             this.points = points;
+        }
+
+        _saveOrientation(orientation, frame) {
+            this.source = Source.MANUAL;
+            this.orientation = orientation;
         }
 
         _saveOccluded(occluded, frame) {
@@ -628,6 +636,10 @@
 
             if (updated.points && fittedPoints.length) {
                 this._savePoints(fittedPoints, frame);
+            }
+
+            if (updated.orientation) {
+                this._saveOrientation(data.orientation, frame);
             }
 
             if (updated.occluded) {
@@ -1169,6 +1181,10 @@
 
             if (updated.points && fittedPoints.length) {
                 this._savePoints(fittedPoints, frame);
+            }
+
+            if (updated.orientation) {
+                this._saveOrientation(data.orientation, frame);
             }
 
             if (updated.outside) {

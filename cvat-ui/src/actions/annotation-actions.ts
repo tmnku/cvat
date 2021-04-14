@@ -1195,6 +1195,8 @@ export function updateAnnotationsAsync(statesToUpdate: any[]): ThunkAction {
             jobInstance, filters, frame, showAllInterpolationTracks,
         } = receiveAnnotationsParameters();
 
+        console.log(`updateasync before: ${statesToUpdate[0].orientation}`);
+
         try {
             if (statesToUpdate.some((state: any): boolean => state.updateFlags.zOrder)) {
                 // deactivate object to visualize changes immediately (UX)
@@ -1203,6 +1205,9 @@ export function updateAnnotationsAsync(statesToUpdate: any[]): ThunkAction {
 
             const promises = statesToUpdate.map((objectState: any): Promise<any> => objectState.save());
             const states = await Promise.all(promises);
+
+            console.log(`updateasync after: ${states[0].orientation}`);
+
             const history = await jobInstance.actions.get();
             const [minZ, maxZ] = computeZRange(states);
 

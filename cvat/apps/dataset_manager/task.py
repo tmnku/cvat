@@ -421,6 +421,7 @@ class JobAnnotation:
             'occluded',
             'z_order',
             'points',
+            'orientation',
             'labeledshapeattributeval__spec_id',
             'labeledshapeattributeval__value',
             'labeledshapeattributeval__id',

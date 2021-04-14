@@ -21,7 +21,7 @@ from .annotation import AnnotationManager, TrackManager
 class TaskData:
     Attribute = namedtuple('Attribute', 'name, value')
     LabeledShape = namedtuple(
-        'LabeledShape', 'type, frame, label, points, occluded, attributes, source, group, z_order')
+        'LabeledShape', 'type, frame, label, points, orientation, occluded, attributes, source, group, z_order')
     LabeledShape.__new__.__defaults__ = (0, 0)
     TrackedShape = namedtuple(
         'TrackedShape', 'type, frame, points, occluded, outside, keyframe, attributes, source, group, z_order, label, track_id')
@@ -227,6 +227,7 @@ class TaskData:
             label=self._get_label_name(shape["label_id"]),
             frame=self.abs_frame_id(shape["frame"]),
             points=shape["points"],
+            orientation=shape.get("orientation", 0.0),
             occluded=shape["occluded"],
             z_order=shape.get("z_order", 0),
             group=shape.get("group", 0),

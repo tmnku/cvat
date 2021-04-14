@@ -2112,6 +2112,7 @@
 
     // TODO: Check filter for annotations
     Task.prototype.annotations.get.implementation = async function (frame, allTracks, filters) {
+        console.log(`get annotations from server`);
         if (!Array.isArray(filters) || filters.some((filter) => typeof filter !== 'string')) {
             throw new ArgumentError('The filters argument must be an array of strings');
         }

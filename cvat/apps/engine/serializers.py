@@ -604,6 +604,7 @@ class ShapeSerializer(serializers.Serializer):
         child=serializers.FloatField(),
         allow_empty=False,
     )
+    orientation = serializers.FloatField(default=0.0)
 
 class LabeledShapeSerializer(ShapeSerializer, AnnotationSerializer):
     attributes = AttributeValSerializer(many=True,

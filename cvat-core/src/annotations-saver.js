@@ -48,6 +48,7 @@
         }
 
         async _request(data, action) {
+            console.log(`make request with`, data);
             const result = await serverProxy.annotations.updateAnnotations(this.sessionType, this.id, data, action);
 
             return result;
@@ -100,6 +101,7 @@
                 'occluded',
                 'z_order',
                 'points',
+                'orientation',
                 'type',
                 'shapes',
                 'attributes',
