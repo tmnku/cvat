@@ -198,7 +198,9 @@ def dump_as_cvat_annotation(file_object, annotations):
                     ("xtl", "{:.2f}".format(shape.points[0])),
                     ("ytl", "{:.2f}".format(shape.points[1])),
                     ("xbr", "{:.2f}".format(shape.points[2])),
-                    ("ybr", "{:.2f}".format(shape.points[3]))
+                    ("ybr", "{:.2f}".format(shape.points[3])),
+                    ("xtr", "{:.2f}".format(shape.points[4])),
+                    ("ytr", "{:.2f}".format(shape.points[5]))
                 ]))
             elif shape.type == "cuboid":
                 dump_data.update(OrderedDict([
@@ -316,6 +318,8 @@ def dump_as_cvat_interpolation(file_object, annotations):
                     ("ytl", "{:.2f}".format(shape.points[1])),
                     ("xbr", "{:.2f}".format(shape.points[2])),
                     ("ybr", "{:.2f}".format(shape.points[3])),
+                    ("xtr", "{:.2f}".format(shape.points[4])),
+                    ("ytr", "{:.2f}".format(shape.points[5])),
                 ]))
             elif shape.type == "cuboid":
                 dump_data.update(OrderedDict([
@@ -487,6 +491,8 @@ def load(file_object, annotations):
                     shape['points'].append(el.attrib['ytl'])
                     shape['points'].append(el.attrib['xbr'])
                     shape['points'].append(el.attrib['ybr'])
+                    shape['points'].append(el.attrib['xtr'])
+                    shape['points'].append(el.attrib['ytr'])
                 elif el.tag == 'cuboid':
                     shape['points'].append(el.attrib['xtl1'])
                     shape['points'].append(el.attrib['ytl1'])

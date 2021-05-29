@@ -30,8 +30,8 @@
 
     function checkNumberOfPoints(shapeType, points) {
         if (shapeType === ObjectShape.RECTANGLE) {
-            if (points.length / 2 !== 2) {
-                throw new DataError(`Rectangle must have 2 points, but got ${points.length / 2}`);
+            if (points.length / 2 !== 3) {
+                throw new DataError(`Rectangle must have 3 points, but got ${points.length / 2}`);
             }
         } else if (shapeType === ObjectShape.POLYGON) {
             if (points.length / 2 < 3) {
@@ -94,7 +94,8 @@
             checkObjectType('coordinate', x, 'number', null);
             checkObjectType('coordinate', y, 'number', null);
 
-            fittedPoints.push(Math.clamp(x, 0, maxX), Math.clamp(y, 0, maxY));
+            // fittedPoints.push(Math.clamp(x, 0, maxX), Math.clamp(y, 0, maxY));
+            fittedPoints.push(x, y);
         }
 
         return shapeType === ObjectShape.CUBOID ? points : fittedPoints;
@@ -321,6 +322,7 @@
             }
 
             if (updated.points) {
+                console.log('check point update');
                 checkObjectType('points', data.points, null, Array);
                 checkNumberOfPoints(this.shapeType, data.points);
                 // cut points

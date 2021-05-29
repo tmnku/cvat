@@ -61,7 +61,7 @@ export class DrawHandlerImpl implements DrawHandler {
         const frameHeight = this.geometry.image.height;
         const { offset } = this.geometry;
 
-        let [xtl, ytl, xbr, ybr] = [bbox.x, bbox.y, bbox.x + bbox.width, bbox.y + bbox.height].map(
+        let [xtl, ytl, xbr, ybr, xtr, ytr] = [bbox.x, bbox.y, bbox.x + bbox.width, bbox.y + bbox.height, bbox.x + bbox.width, bbox.y].map(
             (coord: number): number => coord - offset,
         );
 
@@ -69,8 +69,10 @@ export class DrawHandlerImpl implements DrawHandler {
         xbr = Math.min(Math.max(xbr, 0), frameWidth);
         ytl = Math.min(Math.max(ytl, 0), frameHeight);
         ybr = Math.min(Math.max(ybr, 0), frameHeight);
+        xtr = Math.min(Math.max(xtr, 0), frameWidth);
+        ytr = Math.min(Math.max(ytr, 0), frameHeight);
 
-        return [xtl, ytl, xbr, ybr];
+        return [xtl, ytl, xbr, ybr, xtr, ytr];
     }
 
     private getFinalPolyshapeCoordinates(
@@ -334,7 +336,7 @@ export class DrawHandlerImpl implements DrawHandler {
         this.drawInstance
             .on('drawstop', (e: Event): void => {
                 const bbox = (e.target as SVGRectElement).getBBox();
-                const [xtl, ytl, xbr, ybr] = this.getFinalRectCoordinates(bbox);
+                const [xtl, ytl, xbr, ybr, xtr, ytr] = this.getFinalRectCoordinates(bbox);
                 const { shapeType, redraw: clientID } = this.drawData;
                 this.release();
 
@@ -344,7 +346,7 @@ export class DrawHandlerImpl implements DrawHandler {
                         {
                             clientID,
                             shapeType,
-                            points: [xtl, ytl, xbr, ybr],
+                            points: [xtl, ytl, xbr, ybr, xtr, ytr],
                         },
                         Date.now() - this.startTimestamp,
                     );
@@ -813,6 +815,7 @@ export class DrawHandlerImpl implements DrawHandler {
             }
             this.setupPasteEvents();
         } else {
+            console.log('draw with no initial state');
             if (this.drawData.shapeType === 'rectangle') {
                 if (this.drawData.rectDrawingMethod === RectDrawingMethod.EXTREME_POINTS) {
                     // draw box by extreme clicking
