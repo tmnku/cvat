@@ -13,19 +13,19 @@ class LeftCameraImagesContainer extends React.PureComponent {
                     Front
                 </Row>
                 <Row>
-                    <LeftCameraImages camera='front' />
+                    <LeftCameraImages camera='camera_f' />
                 </Row>
                 <Row>
                     Front left
                 </Row>
                 <Row>
-                    <LeftCameraImages camera='front_left' />
+                    <LeftCameraImages camera='camera_fl' />
                 </Row>
                 <Row>
                     Front right
                 </Row>
                 <Row>
-                    <LeftCameraImages camera='front_right' />
+                    <LeftCameraImages camera='camera_fr' />
                 </Row>
             </Layout.Sider>
         );

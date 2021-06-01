@@ -215,7 +215,7 @@ class LeftCameraImages extends React.PureComponent<Props> {
         let vehicle_to_cam = matrix([[0,-1,0,0], [0,0,-1,0], [1,0,0,0], [0,0,0,1]]);
 
         // compute camera matrix which projects from point in vehicle coordinates into camera image
-        let Rt = multiply(vehicle_to_cam, inv(camera_pose));
+        let Rt = inv(camera_pose);
         this.C = multiply(K, Rt.subset(index([0, 1, 2], [0, 1, 2, 3])));
 
         // fetch depth image
